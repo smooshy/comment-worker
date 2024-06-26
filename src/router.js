@@ -11,6 +11,7 @@ import GitHub from './github';
 import { convertFormDataToObject, handlePlaceholders, objectToMarkdownTable } from './util';
 import { buildSchemaObject } from './validation';
 import Validator from './validator';
+import { validateCaptcha } from './recaptcha';
 
 // Setting up our application:
 const app = new Hono();
@@ -63,6 +64,12 @@ app.post('/api/handle/form', async c => {
     body = await req.json();
   } else {
     return c.text('Unsupported Content-Type', 400);
+  }
+
+  // Validate recaptcha token
+  const validCaptcha = await validateCaptcha(body.token, env.RECAPTCHA_SECRET_KEY, shouldDebug);
+  if (!validCaptcha) {
+    return c.text('Invalid reCaptcha', 400);
   }
 
   // Handle the fields and options

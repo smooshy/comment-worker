@@ -21,3 +21,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          secrets: |
+            RECAPTCHA_SECRET_KEY
+        env:
+          RECAPTCHA_SECRET_KEY: ${{ secrets.CLOUDFLARE_RECAPTCHA_SECRET_KEY }}

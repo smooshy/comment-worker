@@ -66,8 +66,18 @@ app.post('/api/handle/form', async c => {
     return c.text('Unsupported Content-Type', 400);
   }
 
+  const token = body['cf-turnstile-response'];
+  if (shouldDebug) console.log('token', token);
+  const remoteIp = req.headers.get('CF-Connecting-IP');
+  if (shouldDebug) console.log('remoteIp', remoteIp);
+
   // Validate recaptcha token
-  const validCaptcha = await validateCaptcha(body.token, env.RECAPTCHA_SECRET_KEY, shouldDebug);
+  const validCaptcha = await validateCaptcha(
+    token,
+    env.TURNSTILE_SECRET_KEY,
+    remoteIp,
+    shouldDebug
+  );
   if (!validCaptcha) {
     return c.text('Invalid reCaptcha', 400);
   }

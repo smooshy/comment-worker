@@ -1,32 +1,30 @@
-const shouldDebug = false;
-
-const getCaptchaResponseAndOriginalRequest = (captchaResponse, request) => {
-  return 'Captcha Response:' + JSON.stringify(captchaResponse) + ' User Request:' + JSON.stringify(request);
-}
-
-const captchaScoreIsNotValid = (score) =>  score < 0.5;
-
-const validateCaptcha = async (token, secret_key, shouldDebug = false) => {
+const validateCaptcha = async (token, secretKey, remoteIp, shouldDebug = false) => {
   if (!token) {
-      if (shouldDebug) console.log('No reCaptcha token providied');
-      return false;
+    if (shouldDebug) console.log('No token providied');
+    return false;
   }
 
-  const captchaUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secret_key}&response=${token}`;
-  const result = await fetch(captchaUrl);
-  const json = await result.json();
+  const captchaUrl = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
+  const requestBody = {
+    secret: secretKey,
+    response: token,
+    remoteip: remoteIp
+  };
+  const result = await fetch(captchaUrl, {
+    body: JSON.stringify(requestBody),
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+  const outcome = await result.json();
 
-  if (!json.success) {
-      if (shouldDebug) console.log('Invalid captcha response.' + getCaptchaResponseAndOriginalRequest(json, request));
-      return false;
-  }
-
-  if (captchaScoreIsNotValid(json.score)) {
-      if (shouldDebug) console.log('Low Captcha Score. ' + getCaptchaResponseAndOriginalRequest(json, request));
-      return false;
+  if (!outcome.success) {
+    if (shouldDebug) console.log('Invalid captcha response.' + requestBody);
+    return false;
   }
 
   return true;
-}
+};
 
 export { validateCaptcha };

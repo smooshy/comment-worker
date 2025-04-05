@@ -122,7 +122,7 @@ app.post('/api/handle/form', async c => {
   const date = new Date().toISOString();
 
   const fields = {
-    id: commentId,
+    _id: commentId,
     ...validatedFields,
     date
   };
